@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outreach</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="userbar">
+      <span id="userEmail"></span>
+      <span id="adminBadge" class="badge" hidden>Admin</span>
+      <button id="logoutBtn" class="btn btn-ghost">Log out</button>
+    </div>
+    <header class="topbar">
+      <h1>Outreach</h1>
+      <p class="subtitle">Scrape &middot; Draft &middot; Review &middot; Send</p>
+    </header>
+
+    <nav class="segmented" id="tabs">
+      <button class="segment active" data-view="scrape">Scrape</button>
+      <button class="segment" data-view="campaign">Campaign</button>
+      <button class="segment" data-view="drafts">Drafts</button>
+      <button class="segment" data-view="send">Send</button>
+      <button class="segment" data-view="accounts">Accounts</button>
+      <button class="segment" data-view="admin" id="adminTab" hidden>Users</button>
+    </nav>
+
+    <main>
+      <section id="view-scrape" class="view active">
+        <div class="card">
+          <h2>Scrape contacts</h2>
+          <p class="hint">Paste one public webpage URL per line. We'll extract emails, names, companies, titles, and phone numbers where visible.</p>
+          <textarea id="scrapeUrls" rows="6" placeholder="https://example.com/about&#10;https://example.com/team"></textarea>
+          <div class="actions">
+            <button id="scrapeBtn" class="btn btn-primary">Scrape</button>
+            <span id="scrapeStatus" class="status-text"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Or import a file</h2>
+          <p class="hint">Already have scraped data? Upload a CSV or Excel (.xlsx) file. You'll pick which columns map to email, name, company, etc. Any extra columns are carried along as context for the AI.</p>
+          <div class="actions">
+            <input type="file" id="importFile" accept=".csv,.xlsx,.xls" />
+            <button id="importUploadBtn" class="btn btn-primary">Upload &amp; preview</button>
+            <span id="importStatus" class="status-text"></span>
+          </div>
+
+          <div id="importMapping" class="import-mapping" hidden>
+            <h3 class="import-subhead">Map your columns</h3>
+            <div class="form-grid" id="mappingGrid">
+              <label>Email <span class="req">*</span><select data-field="email"></select></label>
+              <label>Name<select data-field="name"></select></label>
+              <label>Company<select data-field="company"></select></label>
+              <label>Title<select data-field="title"></select></label>
+              <label>Phone<select data-field="phone"></select></label>
+            </div>
+            <div class="actions">
+              <button id="importCommitBtn" class="btn btn-primary">Import contacts</button>
+              <span id="importCommitStatus" class="status-text"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-row">
+            <h2>Contacts</h2>
+            <button id="refreshContactsBtn" class="btn btn-ghost">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="contactsTable">
+              <thead>
+                <tr><th>Email</th><th>Name</th><th>Company</th><th>Title</th><th>Phone</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-campaign" class="view">
+        <div class="card">
+          <h2>Campaign brief</h2>
+          <p class="hint">This tells the AI who you are and what to say. One brief can be reused across scrape batches.</p>
+          <div class="form-grid">
+            <label>Your name<input id="senderName" type="text" placeholder="Jane Doe" /></label>
+            <label>Your title<input id="senderTitle" type="text" placeholder="Founder" /></label>
+            <label>Your company<input id="senderCompany" type="text" placeholder="Acme Inc." /></label>
+            <label>Reply-to email<input id="senderReplyEmail" type="email" placeholder="jane@acme.com" /></label>
+          </div>
+          <label class="full">Purpose of this email<textarea id="purpose" rows="2" placeholder="Introduce our new product to potential customers"></textarea></label>
+          <label class="full">Tone
+            <select id="tone">
+              <option>Friendly</option>
+              <option>Formal</option>
+              <option>Direct</option>
+              <option>Casual</option>
+            </select>
+          </label>
+          <label class="full">Key points (one per line)<textarea id="keyPoints" rows="3" placeholder="Saves 10 hours a week&#10;Free 14-day trial"></textarea></label>
+          <label class="full">Call to action<input id="callToAction" type="text" placeholder="Reply to book a 15-min call" /></label>
+          <div class="actions">
+            <button id="saveCampaignBtn" class="btn btn-primary">Save campaign</button>
+            <span id="campaignStatus" class="status-text"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Saved campaigns</h2>
+          <div class="table-wrap">
+            <table id="campaignsTable">
+              <thead><tr><th>Name</th><th>Purpose</th><th>Tone</th><th>Created</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-drafts" class="view">
+        <div class="card">
+          <h2>Generate drafts</h2>
+          <div class="form-grid">
+            <label>Campaign
+              <select id="draftCampaignSelect"></select>
+            </label>
+          </div>
+          <div class="actions">
+            <button id="generateDraftsBtn" class="btn btn-primary">Generate drafts for un-drafted contacts</button>
+            <span id="draftStatus" class="status-text"></span>
+          </div>
+          <div class="progress-bar"><div id="draftProgressFill" class="progress-fill"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-row">
+            <h2>Review drafts</h2>
+            <button id="refreshDraftsBtn" class="btn btn-ghost">Refresh</button>
+          </div>
+          <div id="draftsList" class="drafts-list"></div>
+        </div>
+      </section>
+
+      <section id="view-send" class="view">
+        <div class="card">
+          <h2>Send approved emails</h2>
+          <p class="hint">Sends only <strong>approved</strong> drafts, one at a time, with a random delay between sends, and stops automatically at the daily cap.</p>
+          <div class="form-grid">
+            <label>Send from
+              <select id="senderSelect"></select>
+            </label>
+          </div>
+          <div class="actions">
+            <button id="sendBtn" class="btn btn-primary">Send approved</button>
+            <span id="sendStatusText" class="status-text"></span>
+          </div>
+          <div class="progress-bar"><div id="sendProgressFill" class="progress-fill"></div></div>
+          <p class="hint" id="capHint"></p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-row">
+            <h2>Send log</h2>
+            <button id="refreshLogBtn" class="btn btn-ghost">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="logTable">
+              <thead><tr><th>Email</th><th>From</th><th>Status</th><th>Error</th><th>Time</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-accounts" class="view">
+        <div class="card">
+          <h2>Add a sending account</h2>
+          <p class="hint">Connect the email address you want to send from. For Gmail, use a Google <strong>App Password</strong> (Google → Security → 2-Step Verification → App Passwords), not your normal password. Your password is encrypted before it's stored.</p>
+          <div class="form-grid">
+            <label>Label<input type="text" id="accLabel" placeholder="My Gmail" /></label>
+            <label>Type
+              <select id="accProvider">
+                <option value="gmail">Gmail</option>
+                <option value="custom">Other (custom SMTP)</option>
+              </select>
+            </label>
+            <label>Email address<input type="email" id="accUser" placeholder="you@gmail.com" /></label>
+            <label>Password / App password<input type="password" id="accPass" autocomplete="new-password" /></label>
+          </div>
+          <div class="form-grid" id="customFields" hidden>
+            <label>SMTP host<input type="text" id="accHost" placeholder="smtp.office365.com" /></label>
+            <label>Port<input type="text" id="accPort" placeholder="587" /></label>
+            <label>Use TLS/SSL (secure)
+              <select id="accSecure">
+                <option value="false">No (STARTTLS, port 587)</option>
+                <option value="true">Yes (SSL, port 465)</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button id="accTestBtn" class="btn btn-ghost">Test connection</button>
+            <button id="accSaveBtn" class="btn btn-primary">Test &amp; save</button>
+            <span id="accStatus" class="status-text"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-row">
+            <h2>Your accounts</h2>
+            <button id="refreshAccountsBtn" class="btn btn-ghost">Refresh</button>
+          </div>
+          <div id="accountsList"></div>
+        </div>
+      </section>
+
+      <section id="view-admin" class="view">
+        <div class="card">
+          <div class="card-header-row">
+            <h2>Users</h2>
+            <button id="refreshUsersBtn" class="btn btn-ghost">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="usersTable">
+              <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

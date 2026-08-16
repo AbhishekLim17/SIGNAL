@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset password · Outreach</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Outreach</h1>
+      <p class="subtitle">Reset your password</p>
+      <form id="forgotForm">
+        <label>Email<input type="email" id="email" autocomplete="username" required /></label>
+        <button type="submit" class="btn btn-primary">Send reset link</button>
+      </form>
+      <div id="msg" class="auth-msg"></div>
+      <div class="auth-links">
+        <a href="login.html">Back to sign in</a>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { api } from './js/api.js';
+    const msg = document.getElementById('msg');
+    document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.className = 'auth-msg';
+      msg.textContent = 'Sending…';
+      try {
+        const res = await api.forgot(document.getElementById('email').value);
+        msg.className = 'auth-msg success';
+        msg.textContent = res.emailConfigured
+          ? 'If that email has an account, a reset link is on its way.'
+          : 'Request received. If email isn’t set up on the server, ask your admin to reset it.';
+      } catch (err) {
+        msg.className = 'auth-msg error';
+        msg.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

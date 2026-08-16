@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in · Outreach</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Outreach</h1>
+      <p class="subtitle">Sign in to your account</p>
+      <form id="loginForm">
+        <label>Email<input type="email" id="email" autocomplete="username" required /></label>
+        <label>Password<input type="password" id="password" autocomplete="current-password" required /></label>
+        <button type="submit" class="btn btn-primary">Log in</button>
+      </form>
+      <div id="msg" class="auth-msg"></div>
+      <div class="auth-links">
+        <a href="signup.html">Create account</a>
+        <a href="forgot.html">Forgot password?</a>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { api } from './js/api.js';
+    const msg = document.getElementById('msg');
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.className = 'auth-msg';
+      msg.textContent = 'Signing in…';
+      try {
+        await api.login(document.getElementById('email').value, document.getElementById('password').value);
+        window.location.href = '/index.html';
+      } catch (err) {
+        msg.className = 'auth-msg error';
+        msg.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>
